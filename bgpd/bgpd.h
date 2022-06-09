@@ -54,6 +54,9 @@
 /* Default interval for IPv6 RAs when triggered by BGP unnumbered neighbor. */
 #define BGP_UNNUM_DEFAULT_RA_INTERVAL 10
 
+/* The length designates the multiplying factor to compute the interval of updating counter history */
+#define HISTORY_UPDATE_INTV_LEN 100 
+
 struct update_subgroup;
 struct bpacket;
 struct bgp_pbr_config;
@@ -1497,7 +1500,14 @@ struct peer {
 
 	/* BGP state count */
 	uint32_t established; /* Established */
+	uint32_t established_history[2]; /* History records for the Established counter */
+	time_t established_timestamps[2]; /* The timestamps for the historical records of Established counter */
 	uint32_t dropped;     /* Dropped */
+	uint32_t dropped_history[2]; /* History records for the Dropped counter */
+	time_t dropped_timestamps[2]; /* The timestamps for the historical records of Dropped counter */
+	/* The minimum time interval in seconds between updates on the counter history. */
+	/* Set by this->history_update_interval = this->keepalive * HISTORY_UPDATE_INT */
+	_Atomic time_t history_update_interval; 
 
 	/* Update delay related fields */
 	uint8_t update_delay_over; /* When this is set, BGP is no more waiting

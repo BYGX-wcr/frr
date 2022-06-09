@@ -1234,6 +1234,19 @@ int bgp_stop(struct peer *peer)
 	/* Increment Dropped count. */
 	if (peer_established(peer)) {
 		peer->dropped++;
+		time_t current_time = time(NULL);
+		if ((current_time - peer->dropped_timestamps[0]) > peer->history_update_interval) {
+			// record values
+			uint32_t current_count = peer->dropped;
+			uint32_t last_count = peer->dropped_history[0];
+			time_t last_time = peer->dropped_timestamps[0];
+
+			// shift values, the oldest value will be lost
+			peer->dropped_history[1] = last_count;
+			peer->dropped_timestamps[1] = last_time;
+			peer->dropped_history[0] = current_count;
+			peer->dropped_timestamps[0] = current_time;
+		}
 
 		/* bgp log-neighbor-changes of neighbor Down */
 		if (CHECK_FLAG(peer->bgp->flags,
@@ -1938,6 +1951,19 @@ static int bgp_establish(struct peer *peer)
 
 	/* Increment established count. */
 	peer->established++;
+	time_t current_time = time(NULL);
+	if ((current_time - peer->established_timestamps[0]) > peer->history_update_interval) {
+		// record values
+		uint32_t current_count = peer->established;
+		uint32_t last_count = peer->established_history[0];
+		time_t last_time = peer->established_timestamps[0];
+
+		// shift values, the oldest value will be lost
+		peer->established_history[1] = last_count;
+		peer->established_timestamps[1] = last_time;
+		peer->established_history[0] = current_count;
+		peer->established_timestamps[0] = current_time;
+	}
 	bgp_fsm_change_status(peer, Established);
 
 	/* bgp log-neighbor-changes of neighbor Up */

@@ -498,6 +498,7 @@ static int write_bgpPeerTable(int action, uint8_t *var_val,
 	case BGPPEERKEEPALIVECONFIGURED:
 		peer_flag_set(peer, PEER_FLAG_TIMER);
 		peer->keepalive = intval;
+		peer->history_update_interval = intval * HISTORY_UPDATE_INTV_LEN;
 		peer->v_keepalive = intval;
 		break;
 	case BGPPEERMINROUTEADVERTISEMENTINTERVAL:
