@@ -10073,12 +10073,16 @@ static void bgp_show_failed_summary(struct vty *vty, struct bgp *bgp,
 		if (peer->domainname)
 			json_object_string_add(json_peer, "domainname",
 					       peer->domainname);
-		json_object_int_add(json_peer, "connectionsEstablished",
+
+		json_object_int_add(json_peer, "connectionsEstablishedLongTermCount",
 				    peer->established);
-		json_object_int_add(json_peer, "connectionsDropped",
+		json_object_int_add(json_peer, "connectionsEstablishedRecentCount", peer->established - peer->established_history[1]);
+		json_object_int_add(json_peer, "connectionsDroppedLongTermCount",
 				    peer->dropped);
+		json_object_int_add(json_peer, "connectionsDroppedRecentCount", peer->dropped - peer->dropped_history[1]);
 		peer_uptime(peer->uptime, timebuf, BGP_UPTIME_LEN,
 			    use_json, json_peer);
+
 		if (peer_established(peer))
 			json_object_string_add(json_peer, "lastResetDueTo",
 					       "AFI/SAFI Not Negotiated");
@@ -10098,8 +10102,11 @@ static void bgp_show_failed_summary(struct vty *vty, struct bgp *bgp,
 		if (len < max_neighbor_width)
 			vty_out(vty, "%*s", max_neighbor_width - len,
 				" ");
-		vty_out(vty, "%7d %7d %9s", peer->established,
+		vty_out(vty, "%7d %7d %7d %7d %9s",
+			peer->established,
+			peer->established - peer->established_history[1],
 			peer->dropped,
+			peer->dropped - peer->dropped_history[1],
 			peer_uptime(peer->uptime, timebuf,
 				    BGP_UPTIME_LEN, 0, NULL));
 		if (peer_established(peer))
@@ -10651,10 +10658,12 @@ static int bgp_show_summary(struct vty *vty, struct bgp *bgp, int afi, int safi,
 					json_object_string_add(
 						json_peer, "peerState", "OK");
 
-				json_object_int_add(json_peer, "connectionsEstablished",
-						    peer->established);
-				json_object_int_add(json_peer, "connectionsDropped",
-						    peer->dropped);
+				json_object_int_add(json_peer, "connectionsEstablishedLongTermCount",
+				    peer->established);
+				json_object_int_add(json_peer, "connectionsEstablishedRecentCount", peer->established - peer->established_history[1]);
+				json_object_int_add(json_peer, "connectionsDroppedLongTermCount",
+				    peer->dropped);
+				json_object_int_add(json_peer, "connectionsDroppedRecentCount", peer->dropped - peer->dropped_history[1]);
 				if (peer->desc)
 					json_object_string_add(
 						json_peer, "desc", peer->desc);
@@ -13861,13 +13870,16 @@ static void bgp_show_peer(struct vty *vty, struct peer *p, bool use_json,
 	if (use_json) {
 		json_object_object_add(json_neigh, "addressFamilyInfo",
 				       json_hold);
-		json_object_int_add(json_neigh, "connectionsEstablished",
+		json_object_int_add(json_peer, "connectionsEstablishedLongTermCount",
 				    p->established);
-		json_object_int_add(json_neigh, "connectionsDropped",
+		json_object_int_add(json_peer, "connectionsEstablishedRecentCount", p->established - p->established_history[1]);
+		json_object_int_add(json_peer, "connectionsDroppedLongTermCount",
 				    p->dropped);
+		json_object_int_add(json_peer, "connectionsDroppedRecentCount", p->dropped - p->dropped_history[1]);
 	} else
-		vty_out(vty, "  Connections established %d; dropped %d\n",
-			p->established, p->dropped);
+		vty_out(vty, "  Connections established %d(long-term)/%d(recent); dropped %d(long-term)/%d(recent)\n",
+			p->established, p->established - p->established_history[1]
+			p->dropped, p->dropped - p->dropped_history[1]);
 
 	if (!p->last_reset) {
 		if (use_json)
