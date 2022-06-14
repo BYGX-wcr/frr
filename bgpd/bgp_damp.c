@@ -113,7 +113,7 @@ int bgp_damp_decay(time_t tdiff, int penalty, struct bgp_damp_config *bdc)
 
 /* Handler of reuse timer event.  Each route in the current reuse-list
    is evaluated.  RFC2439 Section 4.8.7.  */
-static int bgp_reuse_timer(struct thread *t)
+static void bgp_reuse_timer(struct thread *t)
 {
 	struct bgp_damp_info *bdi;
 	struct bgp_damp_info *next;
@@ -178,8 +178,6 @@ static int bgp_reuse_timer(struct thread *t)
 			 * 4.8.6).  */
 			bgp_reuse_list_add(bdi, bdc);
 	}
-
-	return 0;
 }
 
 /* A route becomes unreachable (RFC2439 Section 4.8.2).  */
@@ -672,10 +670,7 @@ static int bgp_print_dampening_parameters(struct bgp *bgp, struct vty *vty,
 			json_object_int_add(json, "maxSuppressPenalty",
 					    bdc->ceiling);
 
-			vty_out(vty, "%s\n",
-				json_object_to_json_string_ext(
-					json, JSON_C_TO_STRING_PRETTY));
-			json_object_free(json);
+			vty_json(vty, json);
 		} else {
 			vty_out(vty, "Half-life time: %lld min\n",
 				(long long)bdc->half_life / 60);

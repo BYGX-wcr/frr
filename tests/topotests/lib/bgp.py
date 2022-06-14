@@ -991,11 +991,11 @@ def __create_bgp_unicast_address_family(
                 config_data.append("no {} allowas-in {}".format(neigh_cxt, allow_as_in))
 
             if "shutdown" in peer:
-                shut_val = peer["shutdown"]
-                if shut_val is True:
-                    config_data.append("{} shutdown".format(neigh_cxt))
-                elif shut_val is False:
-                    config_data.append("no {} shutdown".format(neigh_cxt))
+                config_data.append(
+                    "{} {} shutdown".format(
+                        "no" if not peer["shutdown"] else "", neigh_cxt
+                    )
+                )
 
             if prefix_lists:
                 for prefix_list in prefix_lists:
@@ -3061,7 +3061,12 @@ def verify_graceful_restart(
         if router != dut:
             continue
 
-        bgp_addr_type = topo["routers"][dut]["bgp"]["address_family"]
+        try:
+            bgp_addr_type = topo["routers"][dut]["bgp"]["address_family"]
+        except TypeError:
+            bgp_addr_type = topo["routers"][dut]["bgp"][0]["address_family"]
+
+        # bgp_addr_type = topo["routers"][dut]["bgp"]["address_family"]
 
         if addr_type in bgp_addr_type:
             if not check_address_types(addr_type):
@@ -3672,7 +3677,7 @@ def verify_f_bit(tgen, topo, addr_type, input_dict, dut, peer, expected=True):
 @retry(retry_timeout=10)
 def verify_graceful_restart_timers(tgen, topo, addr_type, input_dict, dut, peer):
     """
-    This API is to verify graceful restart timers, configured and recieved
+    This API is to verify graceful restart timers, configured and received
 
     Parameters
     ----------

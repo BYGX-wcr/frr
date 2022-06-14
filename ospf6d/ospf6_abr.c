@@ -451,6 +451,8 @@ int ospf6_abr_originate_summary_to_area(struct ospf6_route *route,
 		/* Do not generate if area is NSSA */
 		route_area =
 			ospf6_area_lookup(route->path.area_id, area->ospf6);
+		assert(route_area);
+
 		if (IS_AREA_NSSA(route_area)) {
 			if (is_debug)
 				zlog_debug(
@@ -1174,7 +1176,7 @@ void ospf6_abr_examin_summary(struct ospf6_lsa *lsa, struct ospf6_area *oa)
 		if (lsa->header->adv_router == router_lsa->router_id) {
 			if (is_debug)
 				zlog_debug(
-					"Ignorning Inter-Router LSA for an ABR (%s)",
+					"Ignoring Inter-Router LSA for an ABR (%s)",
 					buf);
 			if (old)
 				ospf6_route_remove(old, table);
@@ -1274,7 +1276,8 @@ void ospf6_abr_examin_summary(struct ospf6_lsa *lsa, struct ospf6_area *oa)
 			continue;
 		}
 
-		ospf6_route_merge_nexthops(old_route, route);
+		list_delete_all_node(old_route->nh_list);
+		ospf6_route_copy_nexthops(old_route, route);
 		old_entry_updated = true;
 
 		for (ALL_LIST_ELEMENTS_RO(old_route->paths, anode,

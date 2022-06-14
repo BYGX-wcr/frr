@@ -103,7 +103,7 @@ enum zebra_link_type {
    #define IFNAMSIZ        16
 */
 
-#define INTERFACE_NAMSIZ      20
+#define INTERFACE_NAMSIZ      IFNAMSIZ
 #define INTERFACE_HWADDR_MAX  20
 
 typedef signed int ifindex_t;
@@ -592,6 +592,8 @@ void if_link_params_free(struct interface *);
 
 /* Northbound. */
 struct vty;
+extern void if_vty_config_start(struct vty *vty, struct interface *ifp);
+extern void if_vty_config_end(struct vty *vty);
 extern void if_cmd_init(int (*config_write)(struct vty *));
 extern void if_cmd_init_default(void);
 extern void if_zapi_callbacks(int (*create)(struct interface *ifp),
