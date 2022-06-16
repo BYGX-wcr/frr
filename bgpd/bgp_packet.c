@@ -1583,6 +1583,7 @@ static int bgp_open_receive(struct peer *peer, bgp_size_t size)
 		    && peer->bgp->default_keepalive < peer->v_keepalive)
 			peer->v_keepalive = peer->bgp->default_keepalive;
 	}
+	peer->history_update_interval = peer->v_keepalive * HISTORY_UPDATE_INTV_LEN;
 
 	/* Open option part parse. */
 	if (optlen != 0) {

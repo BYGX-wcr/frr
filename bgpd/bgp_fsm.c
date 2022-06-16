@@ -239,6 +239,7 @@ static struct peer *peer_xfer_conn(struct peer *from_peer)
 	peer->as = from_peer->as;
 	peer->v_holdtime = from_peer->v_holdtime;
 	peer->v_keepalive = from_peer->v_keepalive;
+	peer->history_update_interval = peer->v_keepalive * HISTORY_UPDATE_INTV_LEN;
 	peer->v_routeadv = from_peer->v_routeadv;
 	peer->v_delayopen = from_peer->v_delayopen;
 	peer->v_gr_restart = from_peer->v_gr_restart;
@@ -1570,6 +1571,7 @@ int bgp_stop(struct peer *peer)
 		peer->v_keepalive = peer->bgp->default_keepalive;
 		peer->v_holdtime = peer->bgp->default_holdtime;
 	}
+	peer->history_update_interval = peer->v_keepalive * HISTORY_UPDATE_INTV_LEN;
 
 	/* Reset DelayOpenTime */
 	if (CHECK_FLAG(peer->flags, PEER_FLAG_TIMER_DELAYOPEN))

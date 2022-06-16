@@ -5447,7 +5447,6 @@ int peer_timers_set(struct peer *peer, uint32_t keepalive, uint32_t holdtime)
 	peer_flag_set(peer, PEER_FLAG_TIMER);
 	peer->holdtime = holdtime;
 	peer->keepalive = (keepalive < holdtime / 3 ? keepalive : holdtime / 3);
-	peer->history_update_interval = peer->keepalive * HISTORY_UPDATE_INTV_LEN;
 
 	/* Skip peer-group mechanics for regular peers. */
 	if (!CHECK_FLAG(peer->sflags, PEER_STATUS_GROUP))

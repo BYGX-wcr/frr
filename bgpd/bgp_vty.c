@@ -13863,15 +13863,15 @@ static void bgp_show_peer(struct vty *vty, struct peer *p, bool use_json,
 	if (use_json) {
 		json_object_object_add(json_neigh, "addressFamilyInfo",
 				       json_hold);
-		json_object_int_add(json_peer, "connectionsEstablishedLongTermCount",
+		json_object_int_add(json_neigh, "connectionsEstablishedLongTermCount",
 				    p->established);
-		json_object_int_add(json_peer, "connectionsEstablishedRecentCount", p->established - p->established_history[1]);
-		json_object_int_add(json_peer, "connectionsDroppedLongTermCount",
+		json_object_int_add(json_neigh, "connectionsEstablishedRecentCount", p->established - p->established_history[1]);
+		json_object_int_add(json_neigh, "connectionsDroppedLongTermCount",
 				    p->dropped);
-		json_object_int_add(json_peer, "connectionsDroppedRecentCount", p->dropped - p->dropped_history[1]);
+		json_object_int_add(json_neigh, "connectionsDroppedRecentCount", p->dropped - p->dropped_history[1]);
 	} else
 		vty_out(vty, "  Connections established %d(long-term)/%d(recent); dropped %d(long-term)/%d(recent)\n",
-			p->established, p->established - p->established_history[1]
+			p->established, p->established - p->established_history[1],
 			p->dropped, p->dropped - p->dropped_history[1]);
 
 	if (!p->last_reset) {

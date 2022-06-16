@@ -55,7 +55,7 @@
 #define BGP_UNNUM_DEFAULT_RA_INTERVAL 10
 
 /* The length designates the multiplying factor to compute the interval of updating counter history */
-#define HISTORY_UPDATE_INTV_LEN 100 
+#define HISTORY_UPDATE_INTV_LEN 30 
 
 struct update_subgroup;
 struct bpacket;
@@ -1528,7 +1528,7 @@ struct peer {
 	uint32_t dropped_history[2]; /* History records for the Dropped counter */
 	time_t dropped_timestamps[2]; /* The timestamps for the historical records of Dropped counter */
 	/* The minimum time interval in seconds between updates on the counter history. */
-	/* Set by this->history_update_interval = this->keepalive * HISTORY_UPDATE_INT */
+	/* Set by this->history_update_interval = this->v_keepalive * HISTORY_UPDATE_INT */
 	_Atomic time_t history_update_interval; 
 
 	/* Update delay related fields */
