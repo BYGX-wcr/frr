@@ -20,6 +20,8 @@
 #include "static_nb.h"
 #include "static_zebra.h"
 
+#include "static_srv6.h"
+
 
 static int static_path_list_create(struct nb_cb_create_args *args)
 {
@@ -1365,5 +1367,133 @@ int routing_control_plane_protocols_control_plane_protocol_staticd_route_list_sr
 		break;
 	}
 
+	return NB_OK;
+}
+
+/*
+ * XPath:
+ * /frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-staticd:staticd/segment-routing/srv6/locators/locator/local-sids/sid
+ */
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_create(
+	struct nb_cb_create_args *args)
+{
+	struct static_srv6_sid *sid;
+	struct in6_addr sid_value;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	yang_dnode_get_ipv6(&sid_value, args->dnode, "sid");
+	sid = static_srv6_sid_alloc(&sid_value);
+	nb_running_set_entry(args->dnode, sid);
+
+	return NB_OK;
+}
+
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_destroy(
+	struct nb_cb_destroy_args *args)
+{
+	struct static_srv6_sid *sid;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	sid = nb_running_unset_entry(args->dnode);
+	listnode_delete(srv6_sids, sid);
+	static_srv6_sid_del(sid);
+
+	return NB_OK;
+}
+
+void routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_apply_finish(
+	struct nb_cb_apply_finish_args *args)
+{
+	struct static_srv6_sid *sid;
+	struct static_srv6_locator *locator;
+
+	sid = nb_running_get_entry(args->dnode, NULL, true);
+
+	locator = static_srv6_locator_lookup(sid->locator_name);
+	if (!locator) {
+		zlog_info("Locator not found, trying to get locator information from zebra");
+		static_zebra_srv6_manager_get_locator(sid->locator_name);
+		// return;
+	}
+
+	sid->locator = locator;
+	
+	listnode_add(srv6_sids, sid);
+	static_zebra_request_srv6_sid(sid);
+}
+
+/*
+ * XPath:
+ * /frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-staticd:staticd/segment-routing/srv6/locators/locator/local-sids/sid/behavior
+ */
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_behavior_modify(
+	struct nb_cb_modify_args *args)
+{
+	struct static_srv6_sid *sid;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	sid = nb_running_get_entry(args->dnode, NULL, true);
+	sid->behavior = yang_dnode_get_enum(args->dnode, "../behavior");
+
+	return NB_OK;
+}
+
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_behavior_destroy(
+	struct nb_cb_destroy_args *args)
+{
+	return NB_OK;
+}
+
+/*
+ * XPath:
+ * /frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-staticd:staticd/segment-routing/srv6/locators/locator/local-sids/sid/vrf-name
+ */
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_vrf_name_modify(
+	struct nb_cb_modify_args *args)
+{
+	struct static_srv6_sid *sid;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	sid = nb_running_get_entry(args->dnode, NULL, true);
+	strncpy(sid->attributes.vrf_name, yang_dnode_get_string(args->dnode, "../vrf-name"), sizeof(sid->attributes.vrf_name));
+
+	return NB_OK;
+}
+
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_vrf_name_destroy(
+	struct nb_cb_destroy_args *args)
+{
+	return NB_OK;
+}
+
+/*
+ * XPath:
+ * /frr-routing:routing/control-plane-protocols/control-plane-protocol/frr-staticd:staticd/segment-routing/srv6/locators/locator/local-sids/sid/vrf-name
+ */
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_locator_name_modify(
+	struct nb_cb_modify_args *args)
+{
+	struct static_srv6_sid *sid;
+
+	if (args->event != NB_EV_APPLY)
+		return NB_OK;
+
+	sid = nb_running_get_entry(args->dnode, NULL, true);
+	strncpy(sid->locator_name, yang_dnode_get_string(args->dnode, "../locator-name"), sizeof(sid->locator_name));
+
+	return NB_OK;
+}
+
+int routing_control_plane_protocols_control_plane_protocol_staticd_segment_routing_srv6_local_sids_sid_locator_name_destroy(
+	struct nb_cb_destroy_args *args)
+{
 	return NB_OK;
 }

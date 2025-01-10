@@ -1546,11 +1546,11 @@ static int get_srv6_sid_explicit(struct zebra_srv6_sid **sid,
 		return -1;
 	}
 
-	if (ctx->behavior == ZEBRA_SEG6_LOCAL_ACTION_END) {
-		zlog_err("%s: invalid SM request arguments: explicit SID allocation not allowed for End/uN behavior",
-			 __func__);
-		return -1;
-	}
+	// if (ctx->behavior == ZEBRA_SEG6_LOCAL_ACTION_END) {
+	// 	zlog_err("%s: invalid SM request arguments: explicit SID allocation not allowed for End/uN behavior",
+	// 		 __func__);
+	// 	return -1;
+	// }
 
 	/* Allocate an explicit SID function for the SID */
 	if (!alloc_srv6_sid_func_explicit(block, sid_func, sid_func_wide)) {
